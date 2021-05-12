@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PA #2. Variant #9. Snail surface.</title>
+  <style>
+    body {
+      margin: 0;
+    }
+
+    canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+  </style>
+</head>
+
+<body>
+  <script src="three.js"></script>
+  <script src="three\examples\js\effects\AnaglyphEffectMod.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.7/dat.gui.js"
+    integrity="sha512-u+vtyZDzyd0zgAEffKfoNx2BnCahAOBBYvzGu6vma1B18zQ6lEGF3F6dAFvqaxDoIU/GZRxcXV5oq23OIrkQwg=="
+    crossorigin="anonymous"></script>
+  <script>
+    let scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x151926);
+    let camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 1, 70);
+    camera.position.z = 30;
+    camera.focalLength = 10;
+    let degtorad = Math.PI / 180; // Conversion
+    let renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.body.appendChild(renderer.domElement);
+    // document.addEventListener('mousemove', mouseMove, false);
+
+    window.addEventListener("deviceorientation", function(event) {
+
+      // alpha: rotation around z-axis
+      var alpha = event.alpha;
+      // beta: front back motion
+      var beta = event.beta;
+      // gamma: left to right
+      var gamma = event.gamma;
+
+      handleOrientationEvent(alpha, beta, gamma);
+    }, true);
+
+    window.addEventListener('resize', function () {
+      let width = window.innerWidth;
+      let height = window.innerHeight;
+      renderer.setSize(width, height);
+      camera.aspect = width / height;
+      camera.updateProjectionMatrix();
+    })
+
+    var handleOrientationEvent = function(alpha, beta, gamma) {
+        
+        quaternion = getQuaternion(beta, alpha, gamma)
+        console.table(quaternion)
+        geometry.setRotationFromQuaternion(quaternion);
+
+    };
+
+    function paraFunction(u0, v0, target) {
+      let uMin = 0;
+      let uMax = Math.PI * 2;
+      let vMin = -Math.PI;
+      let vMax = Math.PI;
+
+      uRange = uMax - uMin;
+      vRange = vMax - vMin;
+
+      let u = uRange * u0 + uMin;
+      let v = vRange * v0 + vMin;
+      let a = 1;
+      let b = 1;
+      let c = 1;
+      let x = function (u, v) { return a * u * Math.sin(u) * Math.cos(v) }(u, v);
+      let y = function (u, v) { return b * u * Math.cos(u) * Math.cos(v) }(u, v);
+      let z = function (u, v) { return -c * u * Math.sin(v) }(u, v);
+      target.set(x, y, z);
+    };
+
+    let geometry = new THREE.ParametricGeometry(paraFunction, 50, 50);
+    var material = new THREE.MeshBasicMaterial({color: 0xf068b2});
+
+    geometry = new THREE.Mesh(geometry, material);
+    scene.add(geometry);
+    geometry.setRotationFromQuaternion(getQuaternion(0,90,0));
+
+    function getQuaternion( alpha, beta, gamma ) {
+        var _x = beta  ? beta  * degtorad : 0; // beta value
+        var _y = gamma ? gamma * degtorad : 0; // gamma value
+        var _z = alpha ? alpha * degtorad : 0; // alpha value
+
+        var cX = Math.cos( _x/2 );
+        var cY = Math.cos( _y/2 );
+        var cZ = Math.cos( _z/2 );
+        var sX = Math.sin( _x/2 );
+        var sY = Math.sin( _y/2 );
+        var sZ = Math.sin( _z/2 );
+
+        var w = cX * cY * cZ - sX * sY * sZ;
+        var x = sX * cY * cZ - cX * sY * sZ;
+        var y = cX * sY * cZ + sX * cY * sZ;
+        var z = cX * cY * sZ + sX * sY * cZ;
+
+        return new THREE.Quaternion( w, x, y, z );
+      }
+
+    let mouseX = 0, mouseY = 0;
+    let windowHalfX = window.innerWidth / 5;
+    let windowHalfY = window.innerHeight / 5;
+
+    let separation = {eye_sep: 0.064} // default value
+    
+    let gui = new dat.GUI();
+    var view = this;
+    view.Opacity = 0.2;
+    var maingui = gui.addFolder('Main');
+    maingui.open();
+
+    gui.add(separation, 'eye_sep').name('Set separation parameter:')
+
+    let effect = new AnaglyphEffect(renderer, separation.eye_sep, window.innerWidth, window.innerHeight);
+    effect.setSize(window.innerWidth || 1, window.innerHeight || 1);
+
+    function onWindowResize() {
+      windowHalfX = window.innerWidth / 2;
+      windowHalfY = window.innerHeight / 2;
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      effect.setSize(window.innerWidth, window.innerHeight);
+    }
+
+    function mouseMove(event) {
+      mouseX = (event.clientX - windowHalfX) / 50;
+      mouseY = (event.clientY - windowHalfY) / 50;
+    }
+
+    function canv(size, color) {
+      let canvas = document.createElement("canvas"),
+      context = canvas.getContext("2d");
+      canvas.width = canvas.height = size;
+      context.fillStyle = color;
+      context.fillRect(0, 0, size, size);
+      return image_canvas;
+    }
+
+    let render = function () {
+      requestAnimationFrame(render);
+
+      let eyeSep = separation.eye_sep;
+      effect.setFocalLength(eyeSep);
+
+      camera.position.x += (mouseX - camera.position.x) * 0.3;
+      camera.position.y += (- mouseY - camera.position.y) * 0.3;
+      camera.lookAt(scene.position);
+      effect.render(scene, camera);
+    };
+    render();
+  </script>
+</body>
+</html>
