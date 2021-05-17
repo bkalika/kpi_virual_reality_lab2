@@ -30,22 +30,17 @@
     let camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 1, 70);
     camera.position.z = 30;
     camera.focalLength = 10;
-    let degtorad = Math.PI / 180; // Conversion
+    let degtorad = Math.PI / 180;
     let renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
     document.body.appendChild(renderer.domElement);
-    // document.addEventListener('mousemove', mouseMove, false);
+    document.addEventListener('mousemove', mouseMove, false);
 
-    window.addEventListener("deviceorientation", function(event) {
-
-      // alpha: rotation around z-axis
-      var alpha = event.alpha;
-      // beta: front back motion
-      var beta = event.beta;
-      // gamma: left to right
-      var gamma = event.gamma;
-
-      handleOrientationEvent(alpha, beta, gamma);
+    window.addEventListener("deviceorientation", function(e) {
+      var alpha = e.alpha;
+      var beta = e.beta;
+      var gamma = e.gamma;
+      orientationEvent(alpha, beta, gamma);
     }, true);
 
     window.addEventListener('resize', function () {
@@ -56,12 +51,10 @@
       camera.updateProjectionMatrix();
     })
 
-    var handleOrientationEvent = function(alpha, beta, gamma) {
-        
+    var orientationEvent = function(alpha, beta, gamma) {
         quaternion = getQuaternion(beta, alpha, gamma)
         console.table(quaternion)
         geometry.setRotationFromQuaternion(quaternion);
-
     };
 
     function paraFunction(u0, v0, target) {
@@ -78,8 +71,8 @@
       let a = 1;
       let b = 1;
       let c = 1;
-      let x = function (u, v) { return a * u * Math.sin(u) * Math.cos(v) }(u, v);
-      let y = function (u, v) { return b * u * Math.cos(u) * Math.cos(v) }(u, v);
+      let x = function (u, v) { return a * u * Math.sin(u) * Math.cos(v)}(u, v);
+      let y = function (u, v) { return b * u * Math.cos(u) * Math.cos(v)}(u, v);
       let z = function (u, v) { return -c * u * Math.sin(v) }(u, v);
       target.set(x, y, z);
     };
@@ -91,10 +84,10 @@
     scene.add(geometry);
     geometry.setRotationFromQuaternion(getQuaternion(0,90,0));
 
-    function getQuaternion( alpha, beta, gamma ) {
-        var _x = beta  ? beta  * degtorad : 0; // beta value
-        var _y = gamma ? gamma * degtorad : 0; // gamma value
-        var _z = alpha ? alpha * degtorad : 0; // alpha value
+    function getQuaternion(alpha, beta, gamma) {
+        var _x = beta ? beta * degtorad : 0;
+        var _y = gamma ? gamma * degtorad : 0;
+        var _z = alpha ? alpha * degtorad : 0;
 
         var cX = Math.cos( _x/2 );
         var cY = Math.cos( _y/2 );
@@ -115,7 +108,7 @@
     let windowHalfX = window.innerWidth / 5;
     let windowHalfY = window.innerHeight / 5;
 
-    let separation = {eye_sep: 0.064} // default value
+    let separation = {eye_sep: 0.064}
     
     let gui = new dat.GUI();
     var view = this;
