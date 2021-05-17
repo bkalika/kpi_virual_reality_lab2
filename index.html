@@ -82,7 +82,7 @@
 
     geometry = new THREE.Mesh(geometry, material);
     scene.add(geometry);
-    geometry.setRotationFromQuaternion(getQuaternion(120,60,80));
+    geometry.setRotationFromQuaternion(getQuaternion(0,180,0));
 
     function getQuaternion(alpha, beta, gamma) {
         var _x = beta ? beta * degtorad : 0;
