@@ -34,7 +34,7 @@
     let renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
     document.body.appendChild(renderer.domElement);
-    document.addEventListener('mousemove', mouseMove, false);
+    // document.addEventListener('mousemove', mouseMove, false);
 
     window.addEventListener("deviceorientation", function(e) {
       var alpha = e.alpha;
@@ -82,7 +82,7 @@
 
     geometry = new THREE.Mesh(geometry, material);
     scene.add(geometry);
-    geometry.setRotationFromQuaternion(getQuaternion(0,90,0));
+    geometry.setRotationFromQuaternion(getQuaternion(120,60,80));
 
     function getQuaternion(alpha, beta, gamma) {
         var _x = beta ? beta * degtorad : 0;
